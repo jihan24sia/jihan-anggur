@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'jihan';
+    src: url('assets/fonts/fontBBH.ttf');
+}
+
+.font-jihan{
+    font-family: 'jihan';
+}
