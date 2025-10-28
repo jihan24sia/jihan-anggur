@@ -71,10 +71,10 @@
                                                     </svg>
                                                     Edit
                                                 </a>
-                                                <form action="{{ route('pelanggan.destroy', $item->pelanggan_id) }}"
-                                                    method="POST" style="display:inline">
-                                                    @csrf
-                                                    @method('DELETE')
+                                                 <form action="{{ route('pelanggan.destroy', $item->pelanggan_id) }}" method="POST"
+                                                style="display:inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                                @csrf
+                                                @method('DELETE')
                                                     <button type="submit" class="btn btn-danger btn-sm">
                                                         <svg class="icon icon-xs me-2" data-slot="icon" fill="none"
                                                             stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24"
