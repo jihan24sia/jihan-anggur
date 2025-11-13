@@ -24,9 +24,9 @@
                 <p class="mb-0">List data seluruh user</p>
             </div>
             <div>
-                <a href="{{ route('user.create') }}" class="btn btn-success text-white"><i
-                        class="far fa-question-circle me-1"></i>
-                    Tambah user</a>
+                <a href="{{ route('user.create') }}" class="btn btn-success text-white">
+                    <i class="far fa-question-circle me-1"></i> Tambah user
+                </a>
             </div>
         </div>
     </div>
@@ -43,10 +43,8 @@
                                     <th class="border-0">Email</th>
                                     <th class="border-0">Password</th>
                                     <th class="border-0 rounded-end">Action</th>
-
                                 </tr>
                             </thead>
-                            <tbody>
 
                             <tbody>
                                 @foreach ($dataUser as $item)
@@ -55,17 +53,23 @@
                                         <td>{{ $item->email }}</td>
                                         <td>{{ $item->password }}</td>
                                         <td>
-
-                                            <svg class="icon icon-xs me-2" data-slot="icon" fill="none"
-                                                stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10">
-                                                </path>
-                                            </svg>
-                                            Edit
+                                            {{-- Tombol Edit --}}
+                                            <a href="{{ route('user.edit', $item->id) }}"
+                                                class="btn btn-warning btn-sm text-white">
+                                                <svg class="icon icon-xs me-2" data-slot="icon" fill="none"
+                                                    stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24"
+                                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10">
+                                                    </path>
+                                                </svg>
+                                                Edit
                                             </a>
-                                            <form action="" method="POST" style="display:inline">
+
+                                            {{-- Tombol Hapus --}}
+                                            <form action="{{ route('user.destroy', $item->id) }}" method="POST"
+                                                style="display:inline"
+                                                onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm">
@@ -80,11 +84,10 @@
                                                 </button>
                                             </form>
                                         </td>
-
                                     </tr>
                                 @endforeach
                             </tbody>
-                            </tbody>
+
                         </table>
                     </div>
                 </div>
