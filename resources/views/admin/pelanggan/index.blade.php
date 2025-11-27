@@ -103,6 +103,11 @@
                                                 </svg>
                                                 Edit
                                             </a>
+                                            <!-- Tombol Detail / Modal -->
+                                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#detailModal{{ $item->pelanggan_id }}">
+                                                Detail
+                                            </button>
                                             <form action="{{ route('pelanggan.destroy', $item->pelanggan_id) }}"
                                                 method="POST" style="display:inline"
                                                 onsubmit="return confirm('Yakin ingin menghapus data ini?')">
@@ -123,6 +128,91 @@
 
                                     </tr>
                                 @endforeach
+                                @foreach ($dataPelanggan as $item)
+                                    <div class="modal fade" id="detailModal{{ $item->pelanggan_id }}" tabindex="-1"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Detail Pelanggan: {{ $item->first_name }}
+                                                        {{ $item->last_name }}</h5>
+                                                    <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="{{ route('pelanggan.update', $item->pelanggan_id) }}"
+                                                        method="POST" enctype="multipart/form-data">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <div class="row mb-3">
+                                                            <div class="col-md-6">
+                                                                <input type="text" name="first_name"
+                                                                    value="{{ $item->first_name }}"
+                                                                    class="form-control mb-2">
+                                                                <input type="text" name="last_name"
+                                                                    value="{{ $item->last_name }}"
+                                                                    class="form-control mb-2">
+                                                                <input type="email" name="email"
+                                                                    value="{{ $item->email }}"
+                                                                    class="form-control mb-2">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <input type="text" name="phone"
+                                                                    value="{{ $item->phone }}"
+                                                                    class="form-control mb-2">
+                                                                <input type="date" name="birthday"
+                                                                    value="{{ $item->birthday }}"
+                                                                    class="form-control mb-2">
+                                                                <select name="gender" class="form-select mb-2">
+                                                                    <option value="Male"
+                                                                        {{ $item->gender == 'Male' ? 'selected' : '' }}>Male
+                                                                    </option>
+                                                                    <option value="Female"
+                                                                        {{ $item->gender == 'Female' ? 'selected' : '' }}>Female
+                                                                    </option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Upload File Pendukung -->
+                                                        <div class="mb-3">
+                                                            <label>File Pendukung</label>
+                                                            <input type="file" name="files[]" multiple
+                                                                class="form-control">
+                                                            <input type="hidden" name="ref_table" value="pelanggan">
+                                                            <input type="hidden" name="ref_id"
+                                                                value="{{ $item->pelanggan_id }}">
+                                                        </div>
+
+                                                        <!-- List File Terupload -->
+                                                        @if ($item->files && $item->files->count() > 0)
+                                                            <ul class="list-group mb-2">
+                                                                @foreach ($item->files as $file)
+                                                                    <li
+                                                                        class="list-group-item d-flex justify-content-between align-items-center">
+                                                                        {{ $file->filename }}
+                                                                        <form
+                                                                            action="{{ route('pelanggan.deleteFile', $file->id) }}"
+                                                                            method="POST" style="display:inline">
+                                                                            @csrf
+                                                                            @method('DELETE')
+                                                                            <button
+                                                                                class="btn btn-danger btn-sm">Hapus</button>
+                                                                        </form>
+                                                                    </li>
+                                                                @endforeach
+                                                            </ul>
+                                                        @endif
+
+                                                        <button type="submit" class="btn btn-primary">Simpan
+                                                            Perubahan</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+
                             </tbody>
                             </tbody>
                         </table>

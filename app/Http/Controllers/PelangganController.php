@@ -1,99 +1,145 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Pelanggan;
+use App\Models\Multipleuploads;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PelangganController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // ===========================
+    // INDEX
+    // ===========================
     public function index(Request $request)
     {
         $filterableColumns = ['gender'];
-
         $searchableColumns = ['first_name', 'last_name', 'email'];
+
         $data['dataPelanggan'] = Pelanggan::filter($request, $filterableColumns)
-        ->search($request, $searchableColumns)
-        ->paginate(10)->withQueryString();
+            ->search($request, $searchableColumns)
+            ->paginate(10)
+            ->withQueryString();
+
         return view('admin.pelanggan.index', $data);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    // ===========================
+    // CREATE
+    // ===========================
     public function create()
     {
         return view('admin.pelanggan.create');
-
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
 
     public function store(Request $request)
     {
+        $request->validate([
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'birthday' => 'required|date',
+            'gender' => 'required|in:Male,Female',
+            'email' => 'required|email',
+            'phone' => 'required|string',
+            
+        ]);
 
-        //dd($request->all());
-
-        $data['first_name'] = $request->first_name;
-        $data['last_name']  = $request->last_name;
-        $data['birthday']   = $request->birthday;
-        $data['gender']     = $request->gender;
-        $data['email']      = $request->email;
-        $data['phone']      = $request->phone;
-
-        Pelanggan::create($data);
+        Pelanggan::create($request->only(['first_name', 'last_name', 'birthday', 'gender', 'email', 'phone']));
 
         return redirect()->route('pelanggan.index')->with('success', 'Penambahan Data Berhasil!');
     }
 
-    /**
-     * Display the specified resource.
-     */
+    // ===========================
+    // SHOW DETAIL PELANGGAN + FILES
+    // ===========================
     public function show(string $id)
     {
-        //
+        $pelanggan = Pelanggan::with('files')->findOrFail($id);
+        return view('admin.pelanggan.show', compact('pelanggan'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    // ===========================
+    // EDIT & UPDATE
+    // ===========================
     public function edit(string $id)
     {
         $data['dataPelanggan'] = Pelanggan::findOrFail($id);
         return view('admin.pelanggan.edit', $data);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        $pelanggan_id = $id;
-        $pelanggan = Pelanggan::findOrFail($pelanggan_id);
+        $request->validate([
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'birthday' => 'required|date',
+            'gender' => 'required|in:Male,Female',
+            'email' => 'required|email',
+            'phone' => 'required|string',
+            'files.*' => 'nullable|file|max:10240' // max 10MB per file
+        ]);
 
-        $pelanggan->first_name = $request->first_name;
-        $pelanggan->last_name = $request->last_name;
-        $pelanggan->birthday = $request->birthday;
-        $pelanggan->gender = $request->gender;
-        $pelanggan->email = $request->email;
-        $pelanggan->phone = $request->phone;
+        $pelanggan = Pelanggan::findOrFail($id);
+        $pelanggan->update($request->only(['first_name', 'last_name', 'birthday', 'gender', 'email', 'phone']));
+        // Handle multiple file upload
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $path = $file->store('files', 'public');
 
-        $pelanggan->save();
-        return redirect()->route('pelanggan.index')->with('success','perubahan data berhasil');
+                Multipleuploads::create([
+                    'filename' => $path,
+                    'ref_table' => 'pelanggan',
+                    'ref_id' => $id
+                ]);
+            }
+        }
+        return redirect()->route('pelanggan.index')->with('success', 'Perubahan data berhasil');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // ===========================
+    // DELETE PELANGGAN
+    // ===========================
     public function destroy(string $id)
     {
         $pelanggan = Pelanggan::findOrFail($id);
-
         $pelanggan->delete();
-        return redirect()->route('pelanggan.index')->with('succes', 'data berhasil dihapus');
+        return redirect()->route('pelanggan.index')->with('success', 'Data berhasil dihapus');
+    }
+
+    // ===========================
+    // UPLOAD FILE PENDUKUNG
+    // ===========================
+    public function uploadFile(Request $request, $id)
+    {
+        $request->validate([
+            'files.*' => 'required|file|max:10240' // max 10MB per file
+        ]);
+
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $path = $file->store('files', 'public');
+
+                Multipleuploads::create([
+                    'filename' => $path,
+                    'ref_table' => 'pelanggan',
+                    'ref_id' => $id
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'File berhasil diupload');
+    }
+
+    // ===========================
+    // DELETE FILE
+    // ===========================
+    public function deleteFile($id)
+    {
+        $file = Multipleuploads::findOrFail($id);
+        Storage::disk('public')->delete($file->filename);
+        $file->delete();
+
+        return redirect()->back()->with('success', 'File berhasil dihapus');
     }
 }

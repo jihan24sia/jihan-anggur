@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,12 @@ class Pelanggan extends Model
         'email',
         'phone',
     ];
+    public function files()
+    {
+        return $this->hasMany(Multipleuploads::class, 'ref_id')
+            ->where('ref_table', 'pelanggan');
+    }
+
     public function scopeFilter(Builder $query, $request, array $filterableColumns): Builder
     {
         foreach ($filterableColumns as $column) {
@@ -26,13 +33,13 @@ class Pelanggan extends Model
         return $query;
     }
     public function scopeSearch($query, $request, array $columns)
-{
-    if ($request->filled('search')) {
-        $query->where(function($q) use ($request, $columns) {
-            foreach ($columns as $column) {
-                $q->orWhere($column, 'LIKE', '%' . $request->search . '%');
-            }
-        });
+    {
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request, $columns) {
+                foreach ($columns as $column) {
+                    $q->orWhere($column, 'LIKE', '%' . $request->search . '%');
+                }
+            });
+        }
     }
-}
 }
