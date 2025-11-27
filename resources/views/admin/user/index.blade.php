@@ -39,6 +39,7 @@
                         <table id="table-user" class="table table-centered table-nowrap mb-0 rounded">
                             <thead class="thead-light">
                                 <tr>
+                                    <th class="border-0">Foto Profil</th>
                                     <th class="border-0">Name</th>
                                     <th class="border-0">Email</th>
                                     <th class="border-0">Password</th>
@@ -46,9 +47,30 @@
                                 </tr>
                             </thead>
 
+
                             <tbody>
                                 @foreach ($dataUser as $item)
                                     <tr>
+                                        <td>
+                                            @php
+                                                $foto = $item->profile_picture;
+
+                                                if (!$foto) {
+                                                    // default kalau kosong
+                                                    $foto = asset('images/default_user.png');
+                                                } elseif (
+                                                    !str_contains($foto, 'http') &&
+                                                    !str_contains($foto, 'https')
+                                                ) {
+                                                    // path manual → tambahkan storage
+                                                    $foto = asset('storage/' . $foto);
+                                                }
+                                            @endphp
+
+                                            <img src="{{ $foto }}" width="45" height="45"
+                                                class="rounded-circle" style="object-fit: cover;">
+
+                                        </td>
                                         <td>{{ $item->name }}</td>
                                         <td>{{ $item->email }}</td>
                                         <td>{{ $item->password }}</td>
@@ -89,6 +111,9 @@
                             </tbody>
 
                         </table>
+                        <div class="mt-3">
+                            {{ $dataUser->links('pagination::bootstrap-5') }}
+                        </div>
                     </div>
                 </div>
             </div>

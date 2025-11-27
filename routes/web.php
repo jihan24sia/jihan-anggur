@@ -40,3 +40,7 @@ Route::get('/dashboard',[DashboardController::class,'index'])
 
 Route::resource('pelanggan', PelangganController::class);
 Route::resource('user', UserController::class);
+
+Route::delete('/user/{id}/delete-picture',
+    [UserController::class, 'deletePicture']
+)->name('user.delete-picture');

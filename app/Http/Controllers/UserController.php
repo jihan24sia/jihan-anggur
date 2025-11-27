@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
-
 
 class UserController extends Controller
 {
@@ -15,7 +15,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $data['dataUser'] = User::all();
+        $data['dataUser'] = User::paginate(10);
         return view('admin.user.index', $data);
     }
 
@@ -36,23 +36,27 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'min:8', 'confirmed'],
+            'profile_picture' => ['nullable', 'image', 'max:2048'],
         ]);
+
+        $path = null;
+        // di store()
+        if ($request->hasFile('profile_picture')) {
+            $path = $request->file('profile_picture')->store('profile_pictures', 'public');
+        } else {
+            // pake placeholder lokal untuk consistency
+            $path = 'profile_pictures/default.png';
+        }
 
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'profile_picture' => $path,
         ]);
 
-        return redirect()->route('user.index')->with('success', 'User berhasil ditambahkan.');
-    }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+        return redirect()->route('user.index')->with('success', 'User berhasil ditambahkan.');
     }
 
     /**
@@ -69,8 +73,7 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $user_id = $id;
-        $user = User::findOrFail($user_id);
+        $user = User::findOrFail($id);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
@@ -80,6 +83,7 @@ class UserController extends Controller
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
             'password' => ['nullable', 'min:8', 'confirmed'], // opsional saat edit
+            'profile_picture' => ['nullable', 'image', 'max:2048'],
         ]);
 
         $user->name = $validated['name'];
@@ -88,10 +92,18 @@ class UserController extends Controller
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
         }
+        // di update()
+        if ($request->hasFile('profile_picture')) {
+            if ($user->profile_picture && $user->profile_picture != 'profile_pictures/default.png') {
+                Storage::disk('public')->delete($user->profile_picture);
+            }
+            $user->profile_picture = $request->file('profile_picture')->store('profile_pictures', 'public');
+        }
 
 
         $user->save();
-        return redirect()->route('user.index')->with('success', 'perubahan data berhasil');
+
+        return redirect()->route('user.index')->with('success', 'Perubahan data berhasil.');
     }
 
     /**
@@ -101,7 +113,11 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
+        if ($user->profile_picture) {
+            Storage::disk('public')->delete($user->profile_picture);
+        }
+
         $user->delete();
-        return redirect()->route('user.index')->with('succes', 'data berhasil dihapus');
+        return redirect()->route('user.index')->with('success', 'Data berhasil dihapus.');
     }
 }
