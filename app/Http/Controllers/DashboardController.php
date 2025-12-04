@@ -1,8 +1,8 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -11,6 +11,10 @@ class DashboardController extends Controller
      */
     public function index()
     {
+        if (! Auth::check()) {
+            //Redirect ke halaman login
+            return redirect()->route('auth')->withErrors('Silahkan login dulu!');
+        }
         return view('admin.dashboard');
     }
 

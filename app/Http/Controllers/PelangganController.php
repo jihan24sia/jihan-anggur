@@ -1,10 +1,10 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Pelanggan;
-use App\Models\Multipleuploads;
 use Illuminate\Http\Request;
+use App\Models\Multipleuploads;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class PelangganController extends Controller
@@ -14,6 +14,11 @@ class PelangganController extends Controller
     // ===========================
     public function index(Request $request)
     {
+        if (! Auth::check()) {
+            //Redirect ke halaman login
+            return redirect()->route('auth')->withErrors('Silahkan login dulu!');
+        }
+        return view('admin.dashboard');
         $filterableColumns = ['gender'];
         $searchableColumns = ['first_name', 'last_name', 'email'];
 
@@ -37,12 +42,12 @@ class PelangganController extends Controller
     {
         $request->validate([
             'first_name' => 'required|string',
-            'last_name' => 'required|string',
-            'birthday' => 'required|date',
-            'gender' => 'required|in:Male,Female',
-            'email' => 'required|email',
-            'phone' => 'required|string',
-            
+            'last_name'  => 'required|string',
+            'birthday'   => 'required|date',
+            'gender'     => 'required|in:Male,Female',
+            'email'      => 'required|email',
+            'phone'      => 'required|string',
+
         ]);
 
         Pelanggan::create($request->only(['first_name', 'last_name', 'birthday', 'gender', 'email', 'phone']));
@@ -72,12 +77,12 @@ class PelangganController extends Controller
     {
         $request->validate([
             'first_name' => 'required|string',
-            'last_name' => 'required|string',
-            'birthday' => 'required|date',
-            'gender' => 'required|in:Male,Female',
-            'email' => 'required|email',
-            'phone' => 'required|string',
-            'files.*' => 'nullable|file|max:10240' // max 10MB per file
+            'last_name'  => 'required|string',
+            'birthday'   => 'required|date',
+            'gender'     => 'required|in:Male,Female',
+            'email'      => 'required|email',
+            'phone'      => 'required|string',
+            'files.*'    => 'nullable|file|max:10240', // max 10MB per file
         ]);
 
         $pelanggan = Pelanggan::findOrFail($id);
@@ -88,9 +93,9 @@ class PelangganController extends Controller
                 $path = $file->store('files', 'public');
 
                 Multipleuploads::create([
-                    'filename' => $path,
+                    'filename'  => $path,
                     'ref_table' => 'pelanggan',
-                    'ref_id' => $id
+                    'ref_id'    => $id,
                 ]);
             }
         }
@@ -113,7 +118,7 @@ class PelangganController extends Controller
     public function uploadFile(Request $request, $id)
     {
         $request->validate([
-            'files.*' => 'required|file|max:10240' // max 10MB per file
+            'files.*' => 'required|file|max:10240', // max 10MB per file
         ]);
 
         if ($request->hasFile('files')) {
@@ -121,9 +126,9 @@ class PelangganController extends Controller
                 $path = $file->store('files', 'public');
 
                 Multipleuploads::create([
-                    'filename' => $path,
+                    'filename'  => $path,
                     'ref_table' => 'pelanggan',
-                    'ref_id' => $id
+                    'ref_id'    => $id,
                 ]);
             }
         }
