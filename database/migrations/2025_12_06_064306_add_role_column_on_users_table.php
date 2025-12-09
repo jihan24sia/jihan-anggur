@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('multiuploads', function (Blueprint $table) {
-            $table->id(); // kolom id AUTO_INCREMENT
-            $table->string('filename', 250); // kolom filename
-            $table->timestamps(); // created_at & updated_at otomatis
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('role')->after('password');
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('multiuploads');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('role');
+        });
     }
 };

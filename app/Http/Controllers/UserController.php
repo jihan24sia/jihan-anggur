@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -15,6 +16,11 @@ class UserController extends Controller
      */
     public function index()
     {
+        if (!Auth::check()) {
+            //Redirect ke halaman login
+            return redirect()->route('auth')->withErrors('Silahkan login dulu!');
+        }
+        return view('admin.dashboard');
         $data['dataUser'] = User::paginate(10);
         return view('admin.user.index', $data);
     }
@@ -37,6 +43,7 @@ class UserController extends Controller
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'min:8', 'confirmed'],
             'profile_picture' => ['nullable', 'image', 'max:2048'],
+            'role' => 'required',
         ]);
 
         $path = null;
@@ -53,6 +60,7 @@ class UserController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'profile_picture' => $path,
+            'role' => $request->role,
         ]);
 
 
@@ -82,17 +90,22 @@ class UserController extends Controller
                 'email',
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
-            'password' => ['nullable', 'min:8', 'confirmed'], // opsional saat edit
+            'password' => ['nullable', 'min:8', 'confirmed'],
             'profile_picture' => ['nullable', 'image', 'max:2048'],
+            'role' => 'required',
         ]);
 
+        // update basic field
         $user->name = $validated['name'];
         $user->email = $validated['email'];
+        $user->role = $validated['role']; // <-- INI YANG HILANG
 
+        // update password jika diisi
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
         }
-        // di update()
+
+        // update profile picture
         if ($request->hasFile('profile_picture')) {
             if ($user->profile_picture && $user->profile_picture != 'profile_pictures/default.png') {
                 Storage::disk('public')->delete($user->profile_picture);
@@ -100,11 +113,11 @@ class UserController extends Controller
             $user->profile_picture = $request->file('profile_picture')->store('profile_pictures', 'public');
         }
 
-
         $user->save();
 
         return redirect()->route('user.index')->with('success', 'Perubahan data berhasil.');
     }
+
 
     /**
      * Remove the specified resource from storage.

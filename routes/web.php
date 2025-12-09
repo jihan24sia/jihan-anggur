@@ -39,6 +39,7 @@ Route::post('question/store', [QuestionController::class, 'store'])
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
+
 Route::resource('pelanggan', PelangganController::class);
 // Detail Pelanggan
 Route::get('/pelanggan/{id}', [PelangganController::class, 'show'])->name('pelanggan.show');
@@ -57,6 +58,13 @@ Route::post('/pelanggan/{id}/upload', [PelangganController::class, 'uploadFile']
 Route::delete('/pelanggan/file/{id}', [PelangganController::class, 'deleteFile'])
     ->name('pelanggan.deleteFile');
 
+
+Route::group(['middleware' => ['checkrole:Super Admin']], function () {
+   Route::get('user', [UserController::class, 'index'])->name('user.list');
+
+});
+
+
 Route::resource('user', UserController::class);
 
 Route::delete(
@@ -71,3 +79,4 @@ Route::post('/save', [MultipleuploadsController::class, 'store'])->name('uploads
 Route::get('auth', [AuthController::class, 'index'])->name('auth');
 Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
 Route::get('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Pelanggan;
@@ -14,7 +15,7 @@ class PelangganController extends Controller
     // ===========================
     public function index(Request $request)
     {
-        if (! Auth::check()) {
+        if (!Auth::check()) {
             //Redirect ke halaman login
             return redirect()->route('auth')->withErrors('Silahkan login dulu!');
         }
